@@ -1,0 +1,11 @@
+#BlueJ class context
+comment0.target=Inventory
+comment1.params=Nama\ Level
+comment1.target=void\ Inventory(java.lang.String,\ java.lang.String)
+comment2.params=Nama\ Level
+comment2.target=void\ addInventory(java.lang.String,\ java.lang.String)
+comment3.params=Nama\ Level
+comment3.target=void\ updateInventory(java.lang.String,\ java.lang.String)
+comment4.params=Nama\ Level
+comment4.target=void\ deleteInventory(java.lang.String,\ java.lang.String)
+numComments=5

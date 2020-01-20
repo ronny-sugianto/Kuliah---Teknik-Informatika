@@ -1,0 +1,7 @@
+String text = "abc"
+String textSpasi = "abc def"
+
+if (text.matches("abc")) Sout ("STRING ABC")
+else SOUT ("STRING BUKAN ABC")
+if (textSpasi.matches("abc")) Sout ("STRING ABC")
+else SOUT ("STRING BUKAN ABC")

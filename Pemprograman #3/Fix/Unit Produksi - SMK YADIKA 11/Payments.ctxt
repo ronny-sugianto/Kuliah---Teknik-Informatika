@@ -1,0 +1,7 @@
+#BlueJ class context
+comment0.target=Payments
+comment1.params=Nama\ Level\ conn
+comment1.target=void\ Payments(java.lang.String,\ java.lang.String,\ java.sql.Connection)
+comment2.params=kode_barang\ conn
+comment2.target=boolean\ CheckIsExist(java.lang.String,\ java.sql.Connection)
+numComments=3

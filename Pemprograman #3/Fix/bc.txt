@@ -1,0 +1,261 @@
+import java.util.Scanner;
+import java.sql.*;
+public class Apps
+{
+    // instance variables - replace the example below with your own
+    static Connection conn = new DBConnection().connect();
+    static Statement stmt;
+    static Scanner baca = new Scanner(System.in);
+    static Layout display = new Layout();
+    // instance variable for looping & query
+    static String sql,lagi;
+    public static void main(String[] Args) throws Exception{
+    
+           Auth();
+   }
+   public static void Auth() throws Exception{
+   
+            display.Header();
+            System.out.println("[*] Login Dibutuhkan ! ");
+            System.out.format("%65s","= = = = = = = = = = = = = = = = \n");
+            System.out.format("%49s","|-| User ID    = "); String uid  = baca.next();
+            System.out.format("%49s","|-| Kode Akses = "); String pass = baca.next();
+            System.out.format("%65s","= = = = = = = = = = = = = = = = \n");
+            
+            String sql = "Select * from Users where id=? and key=?";
+        
+                try {
+                    Connection conn = new DBConnection().connect();
+                    PreparedStatement pstmt  = conn.prepareStatement(sql);
+                    // set the value
+                    pstmt.setString(1,uid);
+                    pstmt.setString(2,pass);
+                    
+                    ResultSet rs  = pstmt.executeQuery();
+                    if (rs.next()) {
+                            String Nama = rs.getString("name");
+                            String Level = rs.getString("level");
+                            if (Level.equalsIgnoreCase("administrator")) {
+                                rs.close();
+                                conn.close();
+                                Admin(Nama,Level);
+                            
+                            } else {
+                                //panggil.NoAdmin(Nama,Level);
+                            }
+                        } else {
+                            System.out.format("%60s","Maaf Anda Tidak Terdaftar !");
+                            System.out.println();
+                            System.out.print("Ingin coba lagi ? (y/t)");
+                            while ((lagi = baca.next()).equalsIgnoreCase("y")) {
+                                Auth();
+                            }
+                           
+                            display.Footer();
+                            System.exit(0);
+                        }
+                } catch (SQLException e) {System.out.println(e.getMessage());}
+   }
+   private static void Admin(String Nama,String Level) throws Exception{
+                display.Header();
+                System.out.println("[+] Hai, " + Nama + " (" + Level + ")");
+                System.out.println(" ========== MENU ==========\n" +
+                                   " [1] Users Management\n" + 
+                                   " [2] Inventory Management\n" +
+                                   " [3] Logout Account\n" +
+                                   " ==========================");
+                System.out.print(  " Pilihan Anda (Hanya Angka) : ");                 
+                try {
+                    int menu = baca.nextInt();
+                    switch (menu) {
+                            case 1: userManage(Nama,Level); return;            
+                            case 2: inventoryManage(Nama,Level); return;
+                            case 3: Auth(); return;
+                            default: System.out.print("\nPilihan anda salah !\nIngin coba lagi ? (y/t)");
+                                     while ((lagi = baca.next()).equalsIgnoreCase("y")) {
+                                       Admin(Nama,Level);
+                                     }
+                                     return;
+                        }
+                } catch(Exception err) {System.err.println("Terjadi Kesalahan : " + err.getMessage());}
+                
+    }
+     private static void userManage(String Nama,String Level) throws Exception {
+         display.Header();
+         System.out.println("[+] Hai, " + Nama + " (" + Level + ")");
+         display.Users_View();
+         String sql = "SELECT * FROM Users";
+         try {
+              stmt = conn.createStatement();
+              ResultSet rs = stmt.executeQuery(sql);
+              // loop through the result set
+              while (rs.next()) {
+                    System.out.format("|| %-15s || %-17s || %-28s || %-14s ||",rs.getString("id"), rs.getString("key"),rs.getString("name"),rs.getString("level"));
+                    System.out.println();   
+                   }               
+             } catch (SQLException e) {System.out.println(e.getMessage());}
+         System.out.println("============================================================================================\n"+
+                            "[1] Add || [2] Update || [3] Delete || [X] Back");
+         System.out.print("Masukan Pilihan : "); int Pilih = baca.nextInt();
+         String lagi;
+         switch(Pilih) {
+                case 1: addUsers(Nama,Level); return;
+                case 2: updateUsers(Nama,Level); return;
+                case 3: deleteUsers(Nama,Level); return;
+                default: Admin(Nama,Level);            
+         }           
+     }
+     private static void addUsers(String Nama,String Level) throws Exception {
+         System.out.print("[!] Tekan Y, untuk terus melanjutkan. (y/t)");
+         while (( lagi = baca.next()).equalsIgnoreCase("y")) {
+                System.out.print("Id      = "); String add_id = baca.next();
+                System.out.print("Key     = "); String add_key = baca.next();
+                System.out.print("Name    = "); String add_name = baca.next();     
+                System.out.print("Level   = "); String add_level = baca.next();                                                    
+                sql = "INSERT INTO Users ('id','key','name','level') VALUES (?,?,?,?)";
+                try (Connection conn = new DBConnection().connect();
+                     PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                     // set the corresponding param
+                     pstmt.setString(1, add_id);
+                     pstmt.setString(2, add_key);
+                     pstmt.setString(3, add_name);
+                     pstmt.setString(4, add_level);
+                     // execute the delete statement
+                     pstmt.executeUpdate();                    
+                } catch (SQLException e) {System.out.println(e.getMessage());}
+                System.out.println("Data User ID (" + add_id +") Berhasil Ditambahkan !");  
+                System.out.print("Ingin Tambah Data Lagi ? ");  
+         }
+         userManage(Nama,Level);
+     }
+     private static void updateUsers(String Nama,String Level) throws Exception {
+         System.out.print("[!] Tekan Y, untuk terus melanjutkan. (y/t)");
+         while (( lagi = baca.next()).equalsIgnoreCase("y")) {
+               System.out.print("ID Pengguna Yang Ingin Diubah = "); String primary_id = baca.next();
+               System.out.print("Key Baru        = "); String update_key = baca.next();
+               System.out.print("Name Baru       = "); String update_name = baca.next();     
+               System.out.print("Level Baru      = "); String update_level = baca.next();    
+               sql = "UPDATE Users SET key = ? , name = ? , level = ? WHERE id = ?";
+               try (Connection conn = new DBConnection().connect();
+                    PreparedStatement pstmt = conn.prepareStatement(sql)) {                          
+                    // set the corresponding param
+                    pstmt.setString(1, update_key);
+                    pstmt.setString(2, update_name);
+                    pstmt.setString(3, update_level);
+                    pstmt.setString(4, primary_id);
+                    // execute the delete statement
+                    pstmt.executeUpdate();              
+               } catch (SQLException e) {System.out.println(e.getMessage());}
+               System.out.println("Data User ID (" + primary_id +") Berhasil Diubah !");  
+               System.out.print("Ingin Update Data Lagi ? ");  
+         }
+         userManage(Nama,Level);
+     }
+     private static void deleteUsers(String Nama,String Level) throws Exception {
+         System.out.print("[!] Tekan Y, untuk terus melanjutkan. (y/t)");
+         while (( lagi = baca.next()).equalsIgnoreCase("y")) {
+             System.out.print("ID Yang Ingin Dihapus   = "); String delete_id = baca.next();
+             sql = "DELETE FROM Users WHERE id = ?";
+             try (Connection conn = new DBConnection().connect();
+                  PreparedStatement pstmt = conn.prepareStatement(sql)) {                          
+                  // set the corresponding param
+                  pstmt.setString(1, delete_id);
+                  // execute the delete statement
+                  pstmt.executeUpdate();                   
+             } catch (SQLException e) {System.out.println(e.getMessage());}
+             System.out.println("Data User ID (" + delete_id +") Berhasil Dihapus !");  
+             System.out.print("Ingin Hapus Data Lagi ? ");  
+         }
+         userManage(Nama,Level);
+     }
+     private static void inventoryManage(String Nama,String Level) throws Exception {
+         display.Header();
+         System.out.println("[+] Hai, " + Nama + " (" + Level + ")");
+         display.Users_View();
+         String sql = "SELECT * FROM Inventory";
+         try {
+              stmt = conn.createStatement();
+              ResultSet rs = stmt.executeQuery(sql);
+              // loop through the result set
+              while (rs.next()) {
+                    System.out.format("|| %-5s || %-36s || %-14s || Rp.%-7s || %-4s ||",rs.getString("id"), rs.getString("name"),rs.getString("vendor"),rs.getInt("price"),rs.getInt("qty"));
+                    System.out.println();   
+                   }               
+             } catch (SQLException e) {System.out.println(e.getMessage());}
+         System.out.println("============================================================================================\n"+
+                            "[1] Add || [2] Update || [3] Delete || [X] Back");
+         System.out.print("Masukan Pilihan : "); int Pilih = baca.nextInt();
+         String lagi;
+         switch(Pilih) {
+                case 1: addInventory(Nama,Level); return;
+                case 2: updateInventory(Nama,Level); return;
+                case 3: deleteInventory(Nama,Level); return;
+                default: Admin(Nama,Level);            
+         }           
+     }
+     private static void addInventory(String Nama,String Level) throws Exception {
+         System.out.print("[!] Tekan Y, untuk terus melanjutkan. (y/t)");
+         while (( lagi = baca.next()).equalsIgnoreCase("y")) {
+                System.out.print("Id      = "); String add_id = baca.next();
+                System.out.print("Nama    = "); String add_name = baca.next();
+                System.out.print("Merk    = "); String add_vendor = baca.next();     
+                System.out.print("Harga   = "); String add_price = baca.next();                                                    
+                System.out.print("Stok    = "); String add_qty = baca.next();                
+                sql = "INSERT INTO Inventory ('id','name','vendor','price','qty') VALUES (?,?,?,?,?)";
+                try (Connection conn = new DBConnection().connect();
+                     PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                     // set the corresponding param
+                     pstmt.setString(1, add_id);
+                     pstmt.setString(2, add_name);
+                     pstmt.setString(3, add_vendor);
+                     pstmt.setString(4, add_price);
+                     pstmt.setString(5, add_qty);                     
+                     // execute the delete statement
+                     pstmt.executeUpdate();                    
+                } catch (SQLException e) {
+                     System.out.println(e.getMessage());
+                }
+                System.out.println("Data Inventory ID (" + add_id +") Berhasil Ditambahkan !");  
+                System.out.print("Ingin Tambah Data Lagi ? ");  
+         }
+         inventoryManage(Nama,Level);
+     }
+     private static void updateInventory(String Nama,String Level) throws Exception {
+         System.out.print("[!] Tekan Y, untuk terus melanjutkan. (y/t)");
+         while (( lagi = baca.next()).equalsIgnoreCase("y")) {
+               System.out.print("ID Barang Yang Ingin Diubah = "); String primary_id = baca.next();
+               System.out.print("Harga Baru        = "); String update_price = baca.next();
+               System.out.print("Stok  Baru       = "); String update_qty = baca.next();     
+               sql = "UPDATE Inventory SET price = ? , qty = ? WHERE id = ?";
+               try (Connection conn = new DBConnection().connect();
+                    PreparedStatement pstmt = conn.prepareStatement(sql)) {                          
+                    // set the corresponding param
+                    pstmt.setString(1, update_price);
+                    pstmt.setString(2, update_qty);
+                    pstmt.setString(3, primary_id);
+                    // execute the delete statement
+                    pstmt.executeUpdate();              
+               } catch (SQLException e) {System.out.println(e.getMessage());}
+               System.out.println("Data Inventory ID (" + primary_id +") Berhasil Diubah !");  
+               System.out.print("Ingin Update Data Lagi ? ");  
+         }
+         inventoryManage(Nama,Level);
+     }
+     private static void deleteInventory(String Nama,String Level) throws Exception {
+         System.out.print("[!] Tekan Y, untuk terus melanjutkan. (y/t)");
+         while (( lagi = baca.next()).equalsIgnoreCase("y")) {
+             System.out.print("ID Yang Ingin Dihapus   = "); String delete_id = baca.next();
+             sql = "DELETE FROM Inventory WHERE id = ?";
+             try (Connection conn = new DBConnection().connect();
+                  PreparedStatement pstmt = conn.prepareStatement(sql)) {                          
+                  // set the corresponding param
+                  pstmt.setString(1, delete_id);
+                  // execute the delete statement
+                  pstmt.executeUpdate();                   
+             } catch (SQLException e) {System.out.println(e.getMessage());}
+             System.out.println("Data Inventory ID (" + delete_id +") Berhasil Dihapus !");  
+             System.out.print("Ingin Hapus Data Lagi ? ");  
+         }
+         inventoryManage(Nama,Level);
+     }
+}

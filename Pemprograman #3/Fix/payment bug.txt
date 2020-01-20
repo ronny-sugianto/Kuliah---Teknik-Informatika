@@ -1,0 +1,92 @@
+import java.util.Scanner;
+import java.sql.*;
+public class Payments
+{
+    // instance variables - replace the example below with your own
+    private Layout display = new Layout();
+    private Scanner baca = new Scanner(System.in);
+    private Connection conn = new DBConnection().connect();
+    private Statement stmt;
+    private ResultSet rs;
+    private String sql,lagi,id_brg;
+    
+    private int qty;
+    private int jml_brng;
+    private int jumlah_harga;
+    private int jumlah_total;
+    public void Payments(String Nama,String Level,Connection conn) throws Exception
+    {
+        display.Header();
+        System.out.println("[+] Hai, " + Nama + " (" + Level + ")");
+        display.Inventory_View();
+        sql = "SELECT * FROM Inventory";
+        try {
+             stmt = conn.createStatement();
+             rs = stmt.executeQuery(sql);
+             // loop through the result set
+              while (rs.next()) {
+                  System.out.format("|| %-5s || %-36s || %-14s || Rp.%-7s ||  %-4s  ||",rs.getString("id"), rs.getString("name"),rs.getString("vendor"),rs.getInt("price"),rs.getInt("qty"));
+                  System.out.println();   
+              } 
+              stmt.close();
+              conn.close();
+              System.out.print("============================================================================================\n[*] Tekan y untuk melanjutkan !");             
+              while ((lagi = baca.next()).equalsIgnoreCase("y")) {
+                    System.out.print("\nKode Barang   = "); id_brg = baca.next();
+                    System.out.print("Stok  Baru       = "); String update_qty = baca.next();     
+                    sql = "UPDATE Inventory SET qty = ? WHERE id = ?";
+                    try (Connection conn = new DBConnection().connect();
+                         PreparedStatement pstmt = conn.prepareStatement(sql)) {                          
+                         // set the corresponding param
+                         pstmt.setInt(1, qty);
+                         pstmt.setString(2, id_brg);
+                         // execute the delete statement
+                         pstmt.executeUpdate();              
+                    } catch (SQLException e) {System.out.println(e.getMessage());}
+                    System.out.println("Data Barang ID (" + id_brg +") Berhasil Diubah !");  
+                    System.out.print("Ingin Update Data Lagi ? "); 
+                 
+              }
+        } catch (Exception e) {System.out.println(e.getMessage());}                                                                                     
+    }
+    /* BUG
+    private void Process (String kode_barang) throws Exception {
+        String sql = "Select * from Inventory where id='" + kode_barang + "'";
+         try {
+              stmt = conn.createStatement();
+              rs = stmt.executeQuery(sql);
+              // loop through the result set
+              if (rs.next()) {
+                    System.out.print("Jumlah Barang = "); jml_brng = baca.nextInt();
+                    qty = rs.getInt("qty") - jml_brng;  
+                    
+                         if (qty >= 0 || qty <= 0) {
+                       System.out.println("Nama Barang   = " + rs.getString("name"));    
+                       System.out.println("Harga Satuan  = Rp." + rs.getInt("price"));    
+                       jumlah_harga = (rs.getInt("price") * jml_brng);
+                       System.out.println("Jumlah Harga  = Rp." + jumlah_harga);    
+                       System.out.println("============================");  
+                       jumlah_total += jumlah_harga;
+                       System.out.println("Total Belanja = Rp." + jumlah_total);
+                       
+                       sql = "UPDATE Inventory SET qty = ? WHERE id = ?";
+                       try (Connection conn = new DBConnection().connect();
+                       PreparedStatement pstmt = conn.prepareStatement(sql)) {                          
+                             // set the corresponding param
+                             
+                             stmt.close();
+                             rs.close();
+                             
+                             pstmt.setInt(1, qty);
+                             pstmt.setString(2, kode_barang);
+                             // execute the delete statement
+                             pstmt.executeUpdate();              
+                       } catch (SQLException e) {System.out.println(e.getMessage());}
+                       System.out.print("Ingin menambah item lagi ? (y/t) ");
+                   }     
+              }
+              
+           
+             } catch (Exception e) {System.out.println(e.getMessage());}
+    } */
+}

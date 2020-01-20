@@ -1,0 +1,15 @@
+#BlueJ class context
+comment0.target=Layout
+comment1.params=
+comment1.target=void\ Header()
+comment2.params=
+comment2.target=void\ Footer()
+comment3.params=
+comment3.target=void\ Inventory_View()
+comment4.params=
+comment4.target=void\ Users_View()
+comment5.params=
+comment5.target=void\ StrukPay_View()
+comment6.params=
+comment6.target=void\ clrscr()
+numComments=7
